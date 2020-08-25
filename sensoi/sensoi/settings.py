@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'django_filters',
     'store',
     'user',
-    'drf_yasg'
+    'drf_yasg',
+    'django_middleware_global_request',
 ]
 
 MIDDLEWARE = [

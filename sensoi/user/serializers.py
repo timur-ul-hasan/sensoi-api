@@ -5,6 +5,8 @@ from django.contrib.auth import password_validation
 from django.db import IntegrityError
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.models import Permission, Group
+from django_middleware_global_request.middleware import get_request
+
 
 class RegisterUserSerializer(serializers.Serializer):
     email = serializers.EmailField(max_length=254)
@@ -38,15 +40,11 @@ class RegisterUserSerializer(serializers.Serializer):
             get_default_password_validators())
 
         try:
-            user = User.objects.create(
+            user = User.objects.create_user(
                 email=validated_data['email'],
                 password=validated_data['password1'],
                 full_name=validated_data['full_name'],
                )
-            # if validated_data["user_type"] is "service_provider":
-            #     sp = ServiceProvider(representative=user,
-            #                          **validated_data['serviceprovider'])
-            #     sp.save()
 
             return user
         except IntegrityError:
@@ -78,10 +76,6 @@ class TokenObtainPairWithUserDataSerializer(TokenObtainPairSerializer):
         token['superuser'] = user.is_superuser
         token['groups'] = TokenObtainPairWithUserDataSerializer.get_groups(
             user)
-        LoginHistory.objects.create(user=user,
-                                    token=token,
-                                    device=request.user_agent,
-                                    recent_activity=datetime.datetime.now())
         return token
 
 
