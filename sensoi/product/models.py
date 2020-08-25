@@ -15,7 +15,7 @@ def location_project_file(instance, filename):
 
 
 class Files_upload(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     up_file = models.FileField(upload_to=location_file, default=False, verbose_name='file')
     data_type = models.CharField(max_length=25, blank=False, choices=type_choices)
     name = models.CharField(max_length=150, default='Undefined')
@@ -31,7 +31,7 @@ class Files_upload(models.Model):
 
 
 class ProjectFilesUpload(models.Model):
-    user = models.ForeignKey(Users, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     up_file = models.FileField(upload_to=location_project_file, default=False, verbose_name='file')
     taxo_file = models.FileField(upload_to=location_project_file, default=False, verbose_name='taxo-file')
     name = models.CharField(max_length=150, default='Undefined')
