@@ -1,0 +1,9 @@
+Django
+djangorestframework
+django-filter
+mock
+Pillow
+psycopg2-binary
+drf-yasg
+pyyaml
+gunicorn
