@@ -9,16 +9,16 @@ from .views import (
 )
 
 urlpatterns = [
-    url(r'^v1/accounts/token/$',
+    url(r'^accounts/token/$',
         EmailTokenObtainPairWithUserDataView.as_view(),
         name='token_obtain_pair'),
-    url(r'^v1/accounts/token-by-username/$',
+    url(r'^accounts/token-by-username/$',
         UsernameTokenObtainPairWithUserDataView.as_view(),
         name='username_token_obtain_pair'),
-    url(r'^v1/accounts/token/refresh/$',
+    url(r'^accounts/token/refresh/$',
         TokenRefreshView.as_view(),
         name='token_refresh'),
-    url(r'^v1/accounts/register/$',
+    url(r'^accounts/register/$',
         RegisterUser.as_view(),
         name='register_user'),  
 ]
