@@ -23,7 +23,7 @@ SECRET_KEY = 'aywdcgi@!l0$y!rfgcv6eutfc=7v6e1)a*iamctkej^zrs067o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '.vfs.cloud9.us-east-1.amazonaws.com','127.0.0.1','api.ideeza.com']
+ALLOWED_HOSTS = ['localhost', '.vfs.cloud9.us-east-1.amazonaws.com','127.0.0.1','api.ideeza.com','sensoi-api.herokuapp.com']
 
 # Application definition
 INSTALLED_APPS = [
