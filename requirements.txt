@@ -2,6 +2,7 @@ Django
 djangorestframework
 djangorestframework_simplejwt==4.3.0
 django-middleware-global-request
+django-cors-headers
 django-filter
 mock
 Pillow

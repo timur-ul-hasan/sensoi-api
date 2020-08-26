@@ -114,6 +114,20 @@ AUTH_PASSWORD_VALIDATORS = [
 
 ENABLE_USER_REGISTRATION = True
 
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:5000",
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "http://localhost:8000",
+    "http://localhost:9000",
+    "http://127.0.0.1:5000",
+    "http://127.0.0.1:3000",
+    "http://0.0.0.0:3000",
+]
+
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
 LANGUAGE_CODE = 'en-us'
