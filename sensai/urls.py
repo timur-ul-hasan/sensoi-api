@@ -9,9 +9,9 @@ from django.conf.urls import url, include
 
 schema_view = get_schema_view(
     openapi.Info(
-        title="Ideeza API",
+        title="Sensai API",
         default_version='v1',
-        description="Ideeza API for development",
+        description="Sensai API for development",
         terms_of_service="https://ideeza.com/policies/terms/",
         contact=openapi.Contact(email="support@ideeza.com"),
         license=openapi.License(name="BSD License"),
