@@ -36,12 +36,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_filters',
-    'store',
-    'user',
     'drf_yasg',
     'django_middleware_global_request',
     'whitenoise',
     'corsheaders',
+    'store',
+    'user',
+    'product',
 ]
 
 MIDDLEWARE = [
@@ -131,6 +132,19 @@ CORS_ORIGIN_WHITELIST = [
     "http://127.0.0.1:3000",
     "http://0.0.0.0:3000",
 ]
+
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'DEFAULT_INFO': 'config.urls.local.openapi_info',
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

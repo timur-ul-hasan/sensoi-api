@@ -16,6 +16,11 @@ from django.core.files import File
 from Util import alfresco
 import subprocess
 import os
+from rest_framework.decorators import api_view, permission_classes, schema
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 type_choices = {
@@ -34,7 +39,9 @@ def getProjectFiles(request, name):
     return files
 
 
-@login_required(login_url='/login/?next=dashboard')
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def dashboard(request):
     print("=======================pre processing====================")
     print(BASE_DIR)
@@ -72,7 +79,9 @@ def dashboard(request):
                'parent_id': folder['parentId'], 'folder_id': folder['id'], "is_old": is_old}
     return render(request, 'dashboard.html', context)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def main_table(request, parent_id):
     global main_table_data, current_folder
@@ -101,7 +110,9 @@ def main_table(request, parent_id):
     main_table_data = entries
     return HttpResponse(html)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def file_manager(request, parent_id):
     global main_table_data
@@ -121,7 +132,9 @@ def file_manager(request, parent_id):
     main_table_data = entries
     return HttpResponse(html)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def browser_open_file(request, node_id):
     global main_table_data
@@ -132,13 +145,17 @@ def browser_open_file(request, node_id):
         link_id = node_entry['properties']["qshare:sharedId"]
     return JsonResponse({"link_id": link_id})
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def create_folder(request, parent_id, folder_name):
     alfresco.createFolder(parent_id, folder_name)
     return JsonResponse({})
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def bottom_panel(request, node_id):
     global main_table_data
@@ -175,7 +192,9 @@ def bottom_panel(request, node_id):
     print(data)
     return HttpResponse(html)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def post_rating(request, node_id, rating):
     print(request.user)
@@ -188,7 +207,9 @@ def post_rating(request, node_id, rating):
     }
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/?next=dashboard')
 def post_tag(request, node_id, tag):
     print(request.user)
@@ -198,7 +219,9 @@ def post_tag(request, node_id, tag):
     }
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/')
 def add_file(request, value):
     form = FileInputForm(initial={'user': request.user})
@@ -227,7 +250,9 @@ def add_file(request, value):
     }
     return render(request, 'product/add_file.html', context)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required(login_url='/login/')
 def delete_files(request):
     payload = json.loads(request.body.decode('utf-8'))
@@ -240,7 +265,9 @@ def delete_files(request):
     }
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def open_file(request):
     files = Files_upload.objects.filter(user=request.user).all()
@@ -251,7 +278,9 @@ def open_file(request):
                'file_name': file_name}
     return render(request, 'product/open_file.html', context)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def rename_file(request, pk):
     file = Files_upload.objects.get(pk=pk)
@@ -267,12 +296,16 @@ def rename_file(request, pk):
     else:
         return redirect('dashboard')
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def close(request):
     pass
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def open(request, pk):
     file = get_object_or_404(Files_upload, pk=pk)
@@ -287,22 +320,30 @@ def open(request, pk):
     data = {'images': images}
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def import_project(request):
     pass
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def export_project(request):
     pass
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def open_recent(request):
     pass
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def add_favorite(request, pk):
     file = Files_upload.objects.get(pk=pk)
@@ -314,7 +355,9 @@ def add_favorite(request, pk):
         file.save()
     return redirect('dashboard')
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def favorite_list(request):
     # alfresco.makeHeader("admin","i-0c09541dcba022c1e")
@@ -323,6 +366,9 @@ def favorite_list(request):
     files = Files_upload.objects.filter(user=request.user, favorite=True).all()
     return render(request, 'product/favorite_files.html', {'files': files})
 
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def create_new_project(request, project_name):
     alfresco.createNewProjectFolder(request, project_name)
@@ -331,7 +377,9 @@ def create_new_project(request, project_name):
     }
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def copy_ingested(request):
     payload = json.loads(request.body.decode('utf-8'))
@@ -351,7 +399,9 @@ def copy_ingested(request):
     }
     return JsonResponse(data)
 
-
+@swagger_auto_schema(method='GET')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @login_required
 def new_project_view(request, project_name):
     home = alfresco.getUserHome(request)['id']

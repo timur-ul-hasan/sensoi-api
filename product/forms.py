@@ -1,12 +1,10 @@
 from django import forms
-from users.models import Users
+from user.models import User
 from .models import Files_upload, ProjectFilesUpload
-from users.models import Users
-
 
 class FileInputForm(forms.ModelForm):
     up_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=True)
-    user = forms.ModelChoiceField(queryset=Users.objects.all(), widget=forms.HiddenInput())
+    user = forms.ModelChoiceField(queryset=User.objects.all(), widget=forms.HiddenInput())
 
     def save(self, *args, **kwargs):
         print(self.cleaned_data['up_file'])
@@ -20,7 +18,7 @@ class FileInputForm(forms.ModelForm):
 class ProjectFileInputForm(forms.ModelForm):
     up_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
     taxo_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
-    user = forms.ModelChoiceField(queryset=Users.objects.all(), widget=forms.HiddenInput())
+    user = forms.ModelChoiceField(queryset=User.objects.all(), widget=forms.HiddenInput())
 
     def save(self, *args, **kwargs):
         return super().save(commit=False)
