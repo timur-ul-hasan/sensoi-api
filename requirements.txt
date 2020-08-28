@@ -27,3 +27,5 @@ wrapt==1.11.2
 pdf2image==1.13.1
 requests==2.23.0
 whitenoise
+dj-database-url
+django-heroku

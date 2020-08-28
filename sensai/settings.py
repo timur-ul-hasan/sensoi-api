@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 import os
 import mimetypes
 import datetime
+import django_heroku
+import dj_database_url
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -84,13 +86,43 @@ WSGI_APPLICATION = 'sensai.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
+"""
+Host
+ec2-52-204-232-46.compute-1.amazonaws.com
+Database
+datpssmjs67r2c
+User
+czvppfdonajvsm
+Port
+5432
+Password
+82ef23dfa47db55093c6c27ea0907045a64b4ef0fa5de9aba11152d62f411b47
+URI
+postgres://czvppfdonajvsm:82ef23dfa47db55093c6c27ea0907045a64b4ef0fa5de9aba11152d62f411b47@ec2-52-204-232-46.compute-1.amazonaws.com:5432/datpssmjs67r2c
+Heroku CLI
+heroku pg:psql postgresql-concave-62483 --app sensoi-api
+
+
+"""
+
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.environ.get('DB_NAME', 'datpssmjs67r2c'),
+        'USER': os.environ.get('DB_USER', 'czvppfdonajvsm'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', '82ef23dfa47db55093c6c27ea0907045a64b4ef0fa5de9aba11152d62f411b47'),
+        'HOST': os.environ.get('DB_HOST', 'ec2-52-204-232-46.compute-1.amazonaws.com'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
 
 
 REST_FRAMEWORK = {
@@ -189,3 +221,5 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
+
+django_heroku.settings(locals())
