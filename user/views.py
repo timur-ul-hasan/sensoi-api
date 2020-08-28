@@ -30,7 +30,6 @@ def register_user(request):
         user = serializer.save()
         user.is_active = True
         user.save()
-
     return user
 
 
