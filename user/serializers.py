@@ -6,6 +6,7 @@ from django.db import IntegrityError
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.contrib.auth.models import Permission, Group
 from django_middleware_global_request.middleware import get_request
+from Util.alfresco import createPerson
 
 
 class RegisterUserSerializer(serializers.Serializer):
@@ -45,7 +46,7 @@ class RegisterUserSerializer(serializers.Serializer):
                 password=validated_data['password1'],
                 full_name=validated_data['full_name'],
                )
-
+            createPerson(user)
             return user
         except IntegrityError:
             raise ValidationError("Can't create user with this combination")

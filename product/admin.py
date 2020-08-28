@@ -1,9 +1,12 @@
 from django.contrib import admin
-from .models import Files_upload
+from .models import Files_upload,ProjectFilesUpload
 
 # Register your models here.
-class Files_uploadAdmin(admin.ModelAdmin):
-    list_display = ('up_file', 'user', 'data_type')
-    list_per_page = 20
 
-admin.site.register(Files_upload, Files_uploadAdmin)
+@admin.register(Files_upload)
+class Files_uploadAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(ProjectFilesUpload)
+class ProjectFilesUploadAdmin(admin.ModelAdmin):
+    pass

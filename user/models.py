@@ -4,6 +4,7 @@ from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.models import PermissionsMixin
 from django.utils.translation import ugettext_lazy as _
 from django.db import IntegrityError
+from django.core import serializers
 
 class UserManager(BaseUserManager):
     use_in_migrations = True
@@ -51,9 +52,18 @@ class User(AbstractBaseUser, PermissionsMixin):
         },
     )
     
+    is_active = models.BooleanField(default=True)
+    is_admin = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+
+
     EMAIL_FIELD = 'email'
     USERNAME_FIELD = 'email'
     objects = UserManager()
+
+    def serialize(self):
+        serialized_obj = serializers.serialize('json', [ self, ])
+        return serialized_obj
 
     class Meta:
         verbose_name = 'User'

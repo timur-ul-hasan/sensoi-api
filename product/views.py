@@ -19,6 +19,7 @@ import os
 from rest_framework.decorators import api_view, permission_classes, schema
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.response import Response
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -73,11 +74,12 @@ def dashboard(request):
 
     # data = alfresco.getDetailedData(entries)
     project_home = alfresco.getFolderByPath(request.user.id, '/Projects')['id']
-    projects = default_storage.listdir(f'users/{request.user}')[0]
+    projects = []
     main_table_data = entries
     context = {'projects': projects, 'data': data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
                'parent_id': folder['parentId'], 'folder_id': folder['id'], "is_old": is_old}
-    return render(request, 'dashboard.html', context)
+    return Response(context)
+    # return render(request, 'dashboard.html', context)
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
