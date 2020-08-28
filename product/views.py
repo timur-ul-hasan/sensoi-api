@@ -51,7 +51,8 @@ def dashboard(request):
     sorted = False
     value = None
     is_old = 0
-    data = Files_upload.objects.filter(user=request.user).order_by('name').all()
+    data = Files_upload.objects.filter(
+        user=request.user).order_by('name').all()
 
     if request.method == 'POST':
         is_old = 1
@@ -64,7 +65,8 @@ def dashboard(request):
         sorted = True
     if request.session.get('folder', None) is not None:
         entries = alfresco.getFolderChild(request.session['folder'])
-        folder = {'id': request.session['folder'], 'parentId': request.session['parent']}
+        folder = {'id': request.session['folder'],
+                  'parentId': request.session['parent']}
     else:
         entries = alfresco.getUserHomeDirectory(request)
         folder = alfresco.getUserHome(request)
@@ -79,12 +81,11 @@ def dashboard(request):
     context = {'projects': projects, 'data': data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
                'parent_id': folder['parentId'], 'folder_id': folder['id'], "is_old": is_old}
     return Response(context)
-    # return render(request, 'dashboard.html', context)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
-@permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
+@permission_classes([IsAuthenticated])
 def main_table(request, parent_id):
     global main_table_data, current_folder
     if parent_id == "open-project-view":
@@ -95,9 +96,15 @@ def main_table(request, parent_id):
         entries = files
         print("========project name======")
         print(entries)
-        html = render_to_string('layouts/data/local_file_list.html',
-                                {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-                                 'parent_id': parent_id})
+
+        # html = render_to_string('layouts/data/local_file_list.html',
+        #                         {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
+        #                          'parent_id': parent_id})
+
+        data = {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
+                                 'parent_id': parent_id}
+        return Response(data)
+
     else:
         entries = alfresco.getFolderChild(parent_id)
 
@@ -106,16 +113,20 @@ def main_table(request, parent_id):
         request.session['folder'] = parent_id
         request.session['parent'] = node['parentId']
 
-        html = render_to_string('layouts/data/data_list.html',
-                                {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-                                 'parent_id': parent_id})
+        # html = render_to_string('layouts/data/data_list.html',
+        #                         {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
+        #                          'parent_id': parent_id})
+
+        data = {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
+                         'parent_id': parent_id}
+
     main_table_data = entries
-    return HttpResponse(html)
+    return Response(data)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
 def file_manager(request, parent_id):
     global main_table_data
 
@@ -129,15 +140,20 @@ def file_manager(request, parent_id):
     folder = alfresco.getUserHome(request)
     if folder['parentId'] == node_entry['id']:
         return HttpResponse(status=500)
-    html = render_to_string('product/partial/file-manager-modal.html',
-                            {'entries': entries, 'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id})
+    
+
+    # html = render_to_string('product/partial/file-manager-modal.html',
+    #                         {'entries': entries, 'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id})
+
+    data = {'entries': entries, 'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id}
+
     main_table_data = entries
-    return HttpResponse(html)
+    return Response(data)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
 def browser_open_file(request, node_id):
     global main_table_data
     node_entry = alfresco.getNode(node_id)
@@ -145,24 +161,24 @@ def browser_open_file(request, node_id):
         link_id = alfresco.createSharedLink(node_id)
     else:
         link_id = node_entry['properties']["qshare:sharedId"]
-    return JsonResponse({"link_id": link_id})
+    return Response({"link_id": link_id})
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
 def create_folder(request, parent_id, folder_name):
     alfresco.createFolder(parent_id, folder_name)
-    return JsonResponse({})
+    return Response({})
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
 def bottom_panel(request, node_id):
     global main_table_data
     if node_id == "null":
-        return HttpResponse('')
+        return Response({})
 
     print(node_id)
     for item in main_table_data:
@@ -189,15 +205,18 @@ def bottom_panel(request, node_id):
         "qshare:sharedBy"
 
     ]
-    context = {"data": data, "tags": tags, "unreadable_keys": unreadable, 'link_id': link_id, 'ratings': ratings}
-    html = render_to_string('product/partial/bottom_panel.html', context=context)
-    print(data)
-    return HttpResponse(html)
+    context = {"data": data, "tags": tags, "unreadable_keys": unreadable,
+               'link_id': link_id, 'ratings': ratings}
+    # html = render_to_string(
+    #     'product/partial/bottom_panel.html', context=context)
+    # print(data)
+    return Response(context)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
+# @login_required(login_url='/login/?next=dashboard')
 def post_rating(request, node_id, rating):
     print(request.user)
     user = json.loads(request.user.serialize())[0]
@@ -207,22 +226,23 @@ def post_rating(request, node_id, rating):
     data = {
         'message': 'sucess'
     }
-    return JsonResponse(data)
+    return Response(data)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
-@login_required(login_url='/login/?next=dashboard')
 def post_tag(request, node_id, tag):
     print(request.user)
     alfresco.putTag(node_id, tag)
     data = {
         'message': 'sucess'
     }
-    return JsonResponse(data)
+    return Response(data)
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
+
+@swagger_auto_schema(methods=['GET','POST'])
+@api_view(['GET','POST'])
 @permission_classes([AllowAny])
 @login_required(login_url='/login/')
 def add_file(request, value):
@@ -238,11 +258,14 @@ def add_file(request, value):
                 value_type = str(file).split('.')[-1]
                 name = str(file).split('/')[-1]
                 if '.' not in str(file) or value_type not in type_choices[value]:
-                    messages.error(request, f'Make sure your file contains {type_choices[value]}')
+                    messages.error(
+                        request, f'Make sure your file contains {type_choices[value]}')
                     return HttpResponseRedirect(reverse('add_file', kwargs={'value': value}))
-                final_file = Files_upload(user=request.user, up_file=file, data_type=value_type, name=name)
+                final_file = Files_upload(
+                    user=request.user, up_file=file, data_type=value_type, name=name)
                 final_file.save()
-                alfresco.createFile(request.session.get('folder', ''), str(file), file)
+                alfresco.createFile(request.session.get(
+                    'folder', ''), str(file), file)
             return redirect('dashboard')
         else:
             for error in form.errors:
@@ -250,7 +273,10 @@ def add_file(request, value):
     context = {
         'form': form
     }
+
+
     return render(request, 'product/add_file.html', context)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
@@ -267,6 +293,7 @@ def delete_files(request):
     }
     return JsonResponse(data)
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -280,9 +307,10 @@ def open_file(request):
                'file_name': file_name}
     return render(request, 'product/open_file.html', context)
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+
+@swagger_auto_schema(methods=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def rename_file(request, pk):
     file = Files_upload.objects.get(pk=pk)
@@ -298,12 +326,14 @@ def rename_file(request, pk):
     else:
         return redirect('dashboard')
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @login_required
 def close(request):
     pass
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
@@ -322,12 +352,14 @@ def open(request, pk):
     data = {'images': images}
     return JsonResponse(data)
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
 @login_required
 def import_project(request):
     pass
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
@@ -336,6 +368,7 @@ def import_project(request):
 def export_project(request):
     pass
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -343,8 +376,9 @@ def export_project(request):
 def open_recent(request):
     pass
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
+
+@swagger_auto_schema(method='POST')
+@api_view(['POST'])
 @permission_classes([AllowAny])
 @login_required
 def add_favorite(request, pk):
@@ -357,6 +391,7 @@ def add_favorite(request, pk):
         file.save()
     return redirect('dashboard')
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -368,6 +403,7 @@ def favorite_list(request):
     files = Files_upload.objects.filter(user=request.user, favorite=True).all()
     return render(request, 'product/favorite_files.html', {'files': files})
 
+
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
 @permission_classes([AllowAny])
@@ -378,6 +414,7 @@ def create_new_project(request, project_name):
         'message': 'success'
     }
     return JsonResponse(data)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
@@ -394,12 +431,14 @@ def copy_ingested(request):
         print("==================")
         print(files_upload.up_file)
         content = default_storage.open(files_upload.up_file)
-        default_storage.save(f'users/{request.user}/{project_name}/{files_upload.name}', content)
+        default_storage.save(
+            f'users/{request.user}/{project_name}/{files_upload.name}', content)
         print(files_upload)
     data = {
         'message': 'success'
     }
     return JsonResponse(data)
+
 
 @swagger_auto_schema(method='GET')
 @api_view(['GET'])
@@ -416,7 +455,8 @@ def new_project_view(request, project_name):
 
             for file in up_files:
                 name = str(file).split('/')[-1]
-                final_file = ProjectFilesUpload(user=request.user, up_file=file, name=name, project_name=project_name)
+                final_file = ProjectFilesUpload(
+                    user=request.user, up_file=file, name=name, project_name=project_name)
                 alfresco.createFile(home, name, file)
                 final_file.save()
 
@@ -424,7 +464,8 @@ def new_project_view(request, project_name):
                 name = str(file).split('/')[-1]
                 print("========saving project file==============")
                 print(name)
-                final_file = ProjectFilesUpload(user=request.user, taxo_file=file, name=name, project_name=project_name)
+                final_file = ProjectFilesUpload(
+                    user=request.user, taxo_file=file, name=name, project_name=project_name)
                 final_file.save()
 
             return redirect('dashboard')
@@ -446,4 +487,3 @@ def new_project_view(request, project_name):
     }
     html = render_to_string('product/new-project.html', context)
     return HttpResponse(html)
-
