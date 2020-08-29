@@ -18,7 +18,7 @@ import subprocess
 import os
 from rest_framework.decorators import api_view, permission_classes, schema
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework.permissions import IsAuthenticated, AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
 
@@ -40,8 +40,8 @@ def getProjectFiles(request, name):
     return files
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def dashboard(request):
     print("=======================pre processing====================")
@@ -83,8 +83,8 @@ def dashboard(request):
     return Response(context)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
 @permission_classes([IsAuthenticated])
 def main_table(request, parent_id):
     global main_table_data, current_folder
@@ -101,8 +101,13 @@ def main_table(request, parent_id):
         #                         {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
         #                          'parent_id': parent_id})
 
-        data = {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-                                 'parent_id': parent_id}
+        data = {
+                'sorted': sorted, 
+                'title': 'Sensai|Dashboard', 
+                "value": "value", 
+                'entries': entries,
+                'parent_id': parent_id
+            }
         return Response(data)
 
     else:
@@ -118,15 +123,15 @@ def main_table(request, parent_id):
         #                          'parent_id': parent_id})
 
         data = {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-                         'parent_id': parent_id}
+                'parent_id': parent_id}
 
     main_table_data = entries
     return Response(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def file_manager(request, parent_id):
     global main_table_data
 
@@ -140,20 +145,20 @@ def file_manager(request, parent_id):
     folder = alfresco.getUserHome(request)
     if folder['parentId'] == node_entry['id']:
         return HttpResponse(status=500)
-    
 
     # html = render_to_string('product/partial/file-manager-modal.html',
     #                         {'entries': entries, 'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id})
 
-    data = {'entries': entries, 'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id}
+    data = {'entries': entries,
+            'modal_parent_id': node_entry['parentId'], 'folder_id': parent_id}
 
     main_table_data = entries
     return Response(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def browser_open_file(request, node_id):
     global main_table_data
     node_entry = alfresco.getNode(node_id)
@@ -163,18 +168,17 @@ def browser_open_file(request, node_id):
         link_id = node_entry['properties']["qshare:sharedId"]
     return Response({"link_id": link_id})
 
-
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def create_folder(request, parent_id, folder_name):
     alfresco.createFolder(parent_id, folder_name)
     return Response({})
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def bottom_panel(request, node_id):
     global main_table_data
     if node_id == "null":
@@ -213,9 +217,9 @@ def bottom_panel(request, node_id):
     return Response(context)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 # @login_required(login_url='/login/?next=dashboard')
 def post_rating(request, node_id, rating):
     print(request.user)
@@ -229,9 +233,9 @@ def post_rating(request, node_id, rating):
     return Response(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 def post_tag(request, node_id, tag):
     print(request.user)
     alfresco.putTag(node_id, tag)
@@ -241,9 +245,9 @@ def post_tag(request, node_id, tag):
     return Response(data)
 
 
-@swagger_auto_schema(methods=['GET','POST'])
-@api_view(['GET','POST'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(methods=['GET', 'POST'])
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
 @login_required(login_url='/login/')
 def add_file(request, value):
     form = FileInputForm(initial={'user': request.user})
@@ -274,13 +278,12 @@ def add_file(request, value):
         'form': form
     }
 
-
     return render(request, 'product/add_file.html', context)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required(login_url='/login/')
 def delete_files(request):
     payload = json.loads(request.body.decode('utf-8'))
@@ -294,9 +297,9 @@ def delete_files(request):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def open_file(request):
     files = Files_upload.objects.filter(user=request.user).all()
@@ -308,8 +311,8 @@ def open_file(request):
     return render(request, 'product/open_file.html', context)
 
 
-@swagger_auto_schema(methods=['GET','POST'])
-@api_view(['GET','POST'])
+@swagger_auto_schema(methods=['GET', 'POST'])
+@api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 @login_required
 def rename_file(request, pk):
@@ -327,17 +330,17 @@ def rename_file(request, pk):
         return redirect('dashboard')
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def close(request):
     pass
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def open(request, pk):
     file = get_object_or_404(Files_upload, pk=pk)
@@ -353,33 +356,33 @@ def open(request, pk):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def import_project(request):
     pass
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def export_project(request):
     pass
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def open_recent(request):
     pass
 
 
-@swagger_auto_schema(method='POST')
-@api_view(['POST'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def add_favorite(request, pk):
     file = Files_upload.objects.get(pk=pk)
@@ -392,9 +395,9 @@ def add_favorite(request, pk):
     return redirect('dashboard')
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def favorite_list(request):
     # alfresco.makeHeader("admin","i-0c09541dcba022c1e")
@@ -404,9 +407,9 @@ def favorite_list(request):
     return render(request, 'product/favorite_files.html', {'files': files})
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def create_new_project(request, project_name):
     alfresco.createNewProjectFolder(request, project_name)
@@ -416,9 +419,9 @@ def create_new_project(request, project_name):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def copy_ingested(request):
     payload = json.loads(request.body.decode('utf-8'))
@@ -440,9 +443,9 @@ def copy_ingested(request):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method='GET')
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@swagger_auto_schema(method=['GET','POST'])
+@api_view(['GET','POST'])
+@permission_classes([IsAuthenticated])
 @login_required
 def new_project_view(request, project_name):
     home = alfresco.getUserHome(request)['id']

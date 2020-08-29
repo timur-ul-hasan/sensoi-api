@@ -144,6 +144,7 @@ def getFolderChild(node_id):
     url = base_url + 'nodes/' + node_id + '/children?include=properties'
     headers = makeAdminHeader()
     r = requests.get(url, headers=headers)
+    print(r,url)
     children = r.json()
     print(children['list']['entries'])
     return children['list']['entries']
