@@ -5,7 +5,7 @@ from django.conf.urls import include,url
 
 urlpatterns = [
     path('dashboard/rename-file/<int:pk>', views.rename_file, name='rename_file'),
-    path('dashboard/add_file/<str:value>', views.add_file, name='add_file'),
+    path('dashboard/add-file', views.add_file, name='add_file'),
     path('dashboard/open-file/', views.open_file, name='open_file'),
     path('dashboard/add-favorite/<int:pk>/', views.add_favorite, name='add_favorite'),
     path('dashboard/favorite_list/', views.favorite_list, name='favorite_list'),

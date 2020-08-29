@@ -27,7 +27,12 @@ SECRET_KEY = 'aywdcgi@!l0$y!rfgcv6eutfc=7v6e1)a*iamctkej^zrs067o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '.vfs.cloud9.us-east-1.amazonaws.com','127.0.0.1','api.ideeza.com','sensoi-api.herokuapp.com']
+ALLOWED_HOSTS = [
+    'localhost',
+    '.vfs.cloud9.us-east-1.amazonaws.com',
+    '127.0.0.1','api.ideeza.com',
+    'sensoi-api.herokuapp.com'
+]
 
 # Application definition
 INSTALLED_APPS = [
@@ -53,7 +58,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -132,10 +137,11 @@ REST_FRAMEWORK = {
         'rest_framework.parsers.MultiPartParser'
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'UNICODE_JSON': False
 }
 
 
