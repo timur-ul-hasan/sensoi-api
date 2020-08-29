@@ -21,10 +21,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.parsers import JSONParser, MultiPartParser,FormParser
+from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .serializers import (
     FileInputSerializer,
-    NodesSerializer
+    NodesSerializer,
+    FileUploadSerializer
 )
 
 
@@ -76,7 +77,6 @@ def dashboard(request):
     else:
         entries = alfresco.getUserHomeDirectory(request)
         folder = alfresco.getUserHome(request)
-        print(folder)
         request.session['folder'] = folder['id']
         request.session['parent'] = folder['parentId']
 
@@ -84,7 +84,7 @@ def dashboard(request):
     project_home = alfresco.getFolderByPath(request.user.id, '/Projects')['id']
     projects = []
     main_table_data = entries
-    context = {'projects': projects, 'data': data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
+    context = {'projects': projects, 'data': FileUploadSerializer(data,many=True).data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
                'parent_id': folder['parentId'], 'folder_id': folder['id'], "is_old": is_old}
     return Response(context)
 
@@ -275,7 +275,7 @@ def add_file(request):
             name=filename
         )
         final_file.save()
-        alfresco.createFile(data.validated_data["node_id"],filename, file)
+        alfresco.createFile(data.validated_data["node_id"], filename, file)
 
         return Response(data={
             'filename': filename
@@ -293,13 +293,12 @@ def add_file(request):
 @parser_classes([JSONParser])
 def delete_files(request):
     data = NodesSerializer(data=request.data)
-    payload = json.loads(request.body.decode('utf-8'))
     if data.is_valid():
-        for node in data['nodes']:
+        for node in data.data['nodes']:
             alfresco.deleteNode(node)
         return Response({
             'message': 'success'
-        },204)
+        }, 204)
     return Response(data.errors)
 
 

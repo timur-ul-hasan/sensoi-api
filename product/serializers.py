@@ -52,6 +52,10 @@ class NodesSerializer(Serializer):
         allow_empty=True
     )
 
+class FileUploadSerializer(ModelSerializer):
+    class Meta:
+        model = Files_upload
+        fields = '__all__'
 
 
 
