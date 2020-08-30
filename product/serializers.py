@@ -5,20 +5,6 @@ from rest_framework.serializers import Serializer,ModelSerializer
 from rest_framework import serializers
 from .constants import TYPE_CHOICES
 
-
-# class FileInputForm(forms.ModelForm):
-#     up_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=True)
-#     user = forms.ModelChoiceField(queryset=Users.objects.all(), widget=forms.HiddenInput())
-
-#     def save(self, *args, **kwargs):
-#         print(self.cleaned_data['up_file'])
-#         return super().save(commit=False)
-
-#     class Meta:
-#         model = Files_upload
-#         fields = ('up_file', 'user')
-
-
 class FileInputSerializer(ModelSerializer):
     user = serializers.IntegerField()
     up_file = serializers.FileField()
@@ -75,6 +61,36 @@ class FileUploadSerializer(ModelSerializer):
 #     class Meta:
 #         model = ProjectFilesUpload
 #         fields = ('up_file', 'user', 'taxo_file')
+
+class ProjectFileInputSerializer(Serializer):
+    up_files = serializers.ListField(
+        child=serializers.FileField(allow_empty_file=True, use_url=True),
+        required=True
+    )
+
+    txo_files = serializers.ListField(
+        child=serializers.FileField(allow_empty_file=True, use_url=True),
+        required=True
+    )
+
+    
+    class Meta:
+        fields = ('up_files','txo_files')
+
+class ProjectFileInputSerializerSwagger(Serializer):
+    up_files = serializers.ListField(
+        child=serializers.URLField(),
+        required=True
+    )
+
+    taxo_files = serializers.ListField(
+        child=serializers.URLField(),
+        required=True
+    )
+
+
+
+
 
 # class RenameForm(forms.Form):
 #     new_name = forms.CharField(max_length=150, label='New Name')

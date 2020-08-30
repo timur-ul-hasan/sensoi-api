@@ -91,26 +91,6 @@ WSGI_APPLICATION = 'sensai.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-"""
-Host
-ec2-52-204-232-46.compute-1.amazonaws.com
-Database
-datpssmjs67r2c
-User
-czvppfdonajvsm
-Port
-5432
-Password
-82ef23dfa47db55093c6c27ea0907045a64b4ef0fa5de9aba11152d62f411b47
-URI
-postgres://czvppfdonajvsm:82ef23dfa47db55093c6c27ea0907045a64b4ef0fa5de9aba11152d62f411b47@ec2-52-204-232-46.compute-1.amazonaws.com:5432/datpssmjs67r2c
-Heroku CLI
-heroku pg:psql postgresql-concave-62483 --app sensoi-api
-
-
-"""
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',

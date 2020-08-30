@@ -20,6 +20,6 @@ urlpatterns = [
     path('dashboard/api/new-project/<str:project_name>/create', views.create_new_project, name='create_new_project'),
     path('dashboard/api/copy_ingested/', views.copy_ingested, name='copy_ingested'),
     path('dashboard/post-tag/<str:node_id>/<str:tag>', views.post_tag, name='post_tag'),
-    path('dashboard/project/<str:project_name>/new', views.new_project_view, name='new_project_view'),
-    url(r'^dashboard$', views.dashboard, name='dashboard'),
+    path('dashboard/project/<str:project_name>/new/', views.new_project_view, name='new_project_view'),
+    path('dashboard', views.dashboard, name='dashboard'),
 ]

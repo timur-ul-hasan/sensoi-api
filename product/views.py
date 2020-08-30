@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect, reverse, get_object_or_404
-from django.contrib.auth.decorators import login_required
 from product.forms import FileInputForm, RenameForm, SearchForm, ProjectFileInputForm
 from django.contrib import messages
 from .models import Files_upload, ProjectFilesUpload
@@ -25,7 +24,9 @@ from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
 from .serializers import (
     FileInputSerializer,
     NodesSerializer,
-    FileUploadSerializer
+    FileUploadSerializer,
+    ProjectFileInputSerializer,
+    ProjectFileInputSerializerSwagger
 )
 
 
@@ -228,7 +229,6 @@ def bottom_panel(request, node_id):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-# @login_required(login_url='/login/?next=dashboard')
 def post_rating(request, node_id, rating):
     print(request.user)
     user = json.loads(request.user.serialize())[0]
@@ -305,7 +305,6 @@ def delete_files(request):
 @swagger_auto_schema(method=['POST'])
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def open_file(request):
     files = Files_upload.objects.filter(user=request.user).all()
     file_name = {}
@@ -321,7 +320,6 @@ def open_file(request):
 @swagger_auto_schema(methods=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def rename_file(request, pk):
     file = Files_upload.objects.get(pk=pk)
     if request.user == file.user:
@@ -340,7 +338,6 @@ def rename_file(request, pk):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def close(request):
     pass
 
@@ -348,7 +345,6 @@ def close(request):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def open(request, pk):
     file = get_object_or_404(Files_upload, pk=pk)
     if file.data_type == 'pdf':
@@ -366,7 +362,6 @@ def open(request, pk):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def import_project(request):
     pass
 
@@ -374,7 +369,6 @@ def import_project(request):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def export_project(request):
     pass
 
@@ -382,7 +376,6 @@ def export_project(request):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def open_recent(request):
     pass
 
@@ -390,7 +383,6 @@ def open_recent(request):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def add_favorite(request, pk):
     file = Files_upload.objects.get(pk=pk)
     if file.user == request.user and file.favorite == False:
@@ -405,7 +397,6 @@ def add_favorite(request, pk):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def favorite_list(request):
     # alfresco.makeHeader("admin","i-0c09541dcba022c1e")
     # alfresco.createPerson(request.user)
@@ -417,7 +408,6 @@ def favorite_list(request):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def create_new_project(request, project_name):
     alfresco.createNewProjectFolder(request, project_name)
     data = {
@@ -429,7 +419,6 @@ def create_new_project(request, project_name):
 @swagger_auto_schema(method=['GET', 'POST'])
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
-@login_required
 def copy_ingested(request):
     payload = json.loads(request.body.decode('utf-8'))
     project_name = payload['project_name']
@@ -450,50 +439,61 @@ def copy_ingested(request):
     return JsonResponse(data)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
-@permission_classes([IsAuthenticated])
-@login_required
+
+
+@swagger_auto_schema(
+    methods=['POST'],
+    parser_classes=[MultiPartParser,FormParser],
+    request_body=ProjectFileInputSerializerSwagger
+)
+@api_view(['POST'])
+@permission_classes([AllowAny])
+@parser_classes([MultiPartParser,FormParser])
 def new_project_view(request, project_name):
     home = alfresco.getUserHome(request)['id']
-    form = ProjectFileInputForm(initial={'user': request.user})
-    if request.method == "POST":
-        form = ProjectFileInputForm(request.POST, request.FILES)
-        if form.is_valid():
-            up_files = request.FILES.getlist('up_file')
-            txo_files = request.FILES.getlist('taxo_file')
+    print(request.data)
+    request_data = ProjectFileInputSerializer(data=request.data)
+    if request_data.is_valid():  
+        print(request.FILES)
 
-            for file in up_files:
-                name = str(file).split('/')[-1]
-                final_file = ProjectFilesUpload(
-                    user=request.user, up_file=file, name=name, project_name=project_name)
-                alfresco.createFile(home, name, file)
-                final_file.save()
+        up_files = request_data.validated_data.get('up_files',[])
+        txo_files = request_data.validated_data.get('txo_files',[])
 
-            for file in txo_files:
-                name = str(file).split('/')[-1]
-                print("========saving project file==============")
-                print(name)
-                final_file = ProjectFilesUpload(
-                    user=request.user, taxo_file=file, name=name, project_name=project_name)
-                final_file.save()
+        for file in up_files:
+            name = str(file).split('/')[-1]
+            final_file = ProjectFilesUpload(
+                user=request.user, up_file=file, name=name, project_name=project_name)
+            alfresco.createFile(home, name, file)
+            final_file.save()
 
-            return redirect('dashboard')
-        else:
-            for error in form.errors:
-                messages.error(request, error)
-            return redirect('dashboard')
+        for file in txo_files:
+            name = str(file).split('/')[-1]
+            final_file = ProjectFilesUpload(
+                user=request.user, taxo_file=file, name=name, project_name=project_name
+            )
+            alfresco.createFile(home, name, file)
+            final_file.save()
+        return Response(status=201)
+    return Response(request_data.errors)
+
+
+@swagger_auto_schema(
+    methods=[ 'GET'],
+    parser_classes=[JSONParser],
+)
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
+def get_new_project_view(request, project_name):
     files = Files_upload.objects.filter(user=request.user).all()
     file_name = {}
     for file in files:
         file_name[file.id] = str(file.up_file).split('/')[-1]
     context = {
         'request': request,
-        'form': form,
         "files": files,
         'file_name': file_name,
         'user_id': request.user.id,
         'project_name': project_name
     }
-    html = render_to_string('product/new-project.html', context)
-    return HttpResponse(html)
+    return Response({})
