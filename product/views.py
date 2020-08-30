@@ -416,7 +416,7 @@ def copy_ingested(request):
     data = {
         'message': 'success'
     }
-    return JsonResponse(data)
+    return Response(data)
 
 
 @swagger_auto_schema(
