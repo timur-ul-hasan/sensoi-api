@@ -52,9 +52,6 @@ def getProjectFiles(request, name):
 @api_view(['GET', 'POST'])
 @permission_classes([IsAuthenticated])
 def dashboard(request):
-    print("=======================pre processing====================")
-    print(BASE_DIR)
-
     global main_table_data
     sorted = False
     value = None
@@ -85,7 +82,7 @@ def dashboard(request):
     project_home = alfresco.getFolderByPath(request.user.id, '/Projects')['id']
     projects = []
     main_table_data = entries
-    context = {'projects': projects, 'data': FileUploadSerializer(data,many=True).data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
+    context = {'projects': projects, 'data': FileUploadSerializer(data, many=True).data, 'sorted': sorted, 'title': 'Sensai|Dashboard', "value": value, 'entries': entries,
                'parent_id': folder['parentId'], 'folder_id': folder['id'], "is_old": is_old}
     return Response(context)
 
@@ -97,17 +94,8 @@ def main_table(request, parent_id):
     global main_table_data, current_folder
     if parent_id == "open-project-view":
         project_name = request.GET.get('prj_name')
-        print("========project name======")
-        print(project_name)
         files = getProjectFiles(request, project_name)
         entries = files
-        print("========project name======")
-        print(entries)
-
-        # html = render_to_string('layouts/data/local_file_list.html',
-        #                         {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-        #                          'parent_id': parent_id})
-
         data = {
             'sorted': sorted,
             'title': 'Sensai|Dashboard',
@@ -119,16 +107,9 @@ def main_table(request, parent_id):
 
     else:
         entries = alfresco.getFolderChild(parent_id)
-
         node = alfresco.getNode(parent_id)
-
         request.session['folder'] = parent_id
         request.session['parent'] = node['parentId']
-
-        # html = render_to_string('layouts/data/data_list.html',
-        #                         {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
-        #                          'parent_id': parent_id})
-
         data = {'sorted': sorted, 'title': 'Sensai|Dashboard', "value": "value", 'entries': entries,
                 'parent_id': parent_id}
 
@@ -220,14 +201,12 @@ def bottom_panel(request, node_id):
     ]
     context = {"data": data, "tags": tags, "unreadable_keys": unreadable,
                'link_id': link_id, 'ratings': ratings}
-    # html = render_to_string(
-    #     'product/partial/bottom_panel.html', context=context)
-    # print(data)
+ 
     return Response(context)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(method=[ 'POST'])
+@api_view([ 'POST'])
 @permission_classes([IsAuthenticated])
 def post_rating(request, node_id, rating):
     print(request.user)
@@ -241,11 +220,10 @@ def post_rating(request, node_id, rating):
     return Response(data)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(method=[ 'POST'])
+@api_view([ 'POST'])
 @permission_classes([IsAuthenticated])
 def post_tag(request, node_id, tag):
-    print(request.user)
     alfresco.putTag(node_id, tag)
     data = {
         'message': 'sucess'
@@ -311,10 +289,10 @@ def open_file(request):
     for file in files:
         file_name[file.id] = str(file.up_file).split('/')[-1]
     context = {
-        "files": FileUploadSerializer(files,many=True).data,
+        "files": FileUploadSerializer(files, many=True).data,
         "file_name": file_name
     }
-    return Response(context,status=200)
+    return Response(context, status=200)
 
 
 @swagger_auto_schema(methods=['GET', 'POST'])
@@ -356,7 +334,7 @@ def open(request, pk):
     else:
         images = ''
     data = {'images': images}
-    return JsonResponse(data)
+    return Response(data)
 
 
 @swagger_auto_schema(method=['GET', 'POST'])
@@ -380,9 +358,13 @@ def open_recent(request):
     pass
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(
+    methods=['POST'],
+    parser_classes=(JSONParser),
+)
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@parser_classes([JSONParser])
 def add_favorite(request, pk):
     file = Files_upload.objects.get(pk=pk)
     if file.user == request.user and file.favorite == False:
@@ -391,29 +373,27 @@ def add_favorite(request, pk):
     else:
         file.favorite = False
         file.save()
-    return redirect('dashboard')
+    return Response(status=201)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(method=['GET'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def favorite_list(request):
-    # alfresco.makeHeader("admin","i-0c09541dcba022c1e")
-    # alfresco.createPerson(request.user)
-    # alfresco.createFile('user_2', 'from python', 'a');
-    files = Files_upload.objects.filter(user=request.user, favorite=True).all()
-    return render(request, 'product/favorite_files.html', {'files': files})
+    queryset = Files_upload.objects.filter(user=request.user, favorite=True)
+    files = FileUploadSerializer(queryset, many=True).data
+    return Response(files)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(method=['POST'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_new_project(request, project_name):
     alfresco.createNewProjectFolder(request, project_name)
     data = {
         'message': 'success'
     }
-    return JsonResponse(data)
+    return Response(data)
 
 
 @swagger_auto_schema(method=['GET', 'POST'])
@@ -439,24 +419,25 @@ def copy_ingested(request):
     return JsonResponse(data)
 
 
-
-
 @swagger_auto_schema(
     methods=['POST'],
-    parser_classes=[MultiPartParser,FormParser],
-    request_body=ProjectFileInputSerializerSwagger
+    parser_classes=[MultiPartParser, FormParser],
+    request_body=ProjectFileInputSerializerSwagger,
+    operation_description="""
+        Create new project,due to drf-yasf limitation we cannot send multiple files
+        through swagger, so please use postman to test this API.
+        Current documentation is just basic skelton for request body.
+    """
 )
 @api_view(['POST'])
-@permission_classes([AllowAny])
-@parser_classes([MultiPartParser,FormParser])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
 def new_project_view(request, project_name):
     home = alfresco.getUserHome(request)['id']
     request_data = ProjectFileInputSerializer(data=request.data)
-    if request_data.is_valid():  
-        print(request.FILES)
-
-        up_files = request_data.validated_data.get('up_files',[])
-        txo_files = request_data.validated_data.get('txo_files',[])
+    if request_data.is_valid():
+        up_files = request_data.validated_data.get('up_files', [])
+        txo_files = request_data.validated_data.get('txo_files', [])
 
         for file in up_files:
             name = str(file).split('/')[-1]
@@ -476,9 +457,8 @@ def new_project_view(request, project_name):
     return Response(request_data.errors)
 
 
-
 @swagger_auto_schema(
-    methods=[ 'GET'],
+    methods=['GET'],
     parser_classes=[JSONParser],
 )
 @api_view(['GET'])
@@ -490,7 +470,7 @@ def get_new_project_view(request, project_name):
     for file in files:
         file_name[file.id] = str(file.up_file).split('/')[-1]
     context = {
-        "files": FileUploadSerializer(files,many=True).data,
+        "files": FileUploadSerializer(files, many=True).data,
         'file_name': file_name,
         'user_id': request.user.id,
         'project_name': project_name
