@@ -21,5 +21,6 @@ urlpatterns = [
     path('dashboard/api/copy_ingested/', views.copy_ingested, name='copy_ingested'),
     path('dashboard/post-tag/<str:node_id>/<str:tag>', views.post_tag, name='post_tag'),
     path('dashboard/project/<str:project_name>/new/', views.new_project_view, name='new_project_view'),
+    path('dashboard/project/<str:project_name>', views.get_new_project_view, name='get_new_project_view'),
     path('dashboard', views.dashboard, name='dashboard'),
 ]

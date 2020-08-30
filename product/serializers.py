@@ -45,23 +45,6 @@ class FileUploadSerializer(ModelSerializer):
 
 
 
-# class ProjectFileInputForm(forms.ModelForm):
-#     up_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
-#     taxo_file = forms.FileField(widget=forms.ClearableFileInput(attrs={'multiple': True}), required=False)
-#     user = forms.ModelChoiceField(queryset=Users.objects.all(), widget=forms.HiddenInput())
-
-#     def save(self, *args, **kwargs):
-#         return super().save(commit=False)
-
-#     # def __init__(self, *args, **kwargs):
-#     #     qs = kwargs.pop('user')
-#     #     super(FooForm, self).__init__(*args, **kwargs)
-#     #     self.fields['ingested'].queryset = qs
-
-#     class Meta:
-#         model = ProjectFilesUpload
-#         fields = ('up_file', 'user', 'taxo_file')
-
 class ProjectFileInputSerializer(Serializer):
     up_files = serializers.ListField(
         child=serializers.FileField(allow_empty_file=True, use_url=True),

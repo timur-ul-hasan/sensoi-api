@@ -451,7 +451,6 @@ def copy_ingested(request):
 @parser_classes([MultiPartParser,FormParser])
 def new_project_view(request, project_name):
     home = alfresco.getUserHome(request)['id']
-    print(request.data)
     request_data = ProjectFileInputSerializer(data=request.data)
     if request_data.is_valid():  
         print(request.FILES)
@@ -477,6 +476,7 @@ def new_project_view(request, project_name):
     return Response(request_data.errors)
 
 
+
 @swagger_auto_schema(
     methods=[ 'GET'],
     parser_classes=[JSONParser],
@@ -485,15 +485,14 @@ def new_project_view(request, project_name):
 @permission_classes([IsAuthenticated])
 @parser_classes([JSONParser])
 def get_new_project_view(request, project_name):
-    files = Files_upload.objects.filter(user=request.user).all()
+    files = Files_upload.objects.filter(user=request.user)
     file_name = {}
     for file in files:
         file_name[file.id] = str(file.up_file).split('/')[-1]
     context = {
-        'request': request,
-        "files": files,
+        "files": FileUploadSerializer(files,many=True).data,
         'file_name': file_name,
         'user_id': request.user.id,
         'project_name': project_name
     }
-    return Response({})
+    return Response(context)
