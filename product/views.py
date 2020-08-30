@@ -302,8 +302,8 @@ def delete_files(request):
     return Response(data.errors)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(method=['POST'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 @login_required
 def open_file(request):
@@ -311,9 +311,11 @@ def open_file(request):
     file_name = {}
     for file in files:
         file_name[file.id] = str(file.up_file).split('/')[-1]
-    context = {"files": files,
-               'file_name': file_name}
-    return render(request, 'product/open_file.html', context)
+    context = {
+        "files": FileUploadSerializer(files,many=True).data,
+        "file_name": file_name
+    }
+    return Response(context,status=200)
 
 
 @swagger_auto_schema(methods=['GET', 'POST'])
