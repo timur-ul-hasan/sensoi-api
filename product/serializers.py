@@ -72,7 +72,12 @@ class ProjectFileInputSerializerSwagger(Serializer):
     )
 
 
-
+class IngestedSerializer(Serializer):
+    ingested = serializers.ListField(
+        child=serializers.CharField(max_length=200),
+        allow_empty=True
+    )
+    project_name = serializers.CharField(max_length=200)
 
 
 # class RenameForm(forms.Form):

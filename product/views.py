@@ -21,12 +21,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticate
 from rest_framework.response import Response
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser, MultiPartParser, FormParser
+
 from .serializers import (
     FileInputSerializer,
     NodesSerializer,
     FileUploadSerializer,
     ProjectFileInputSerializer,
-    ProjectFileInputSerializerSwagger
+    ProjectFileInputSerializerSwagger,
+    IngestedSerializer,
 )
 
 
@@ -396,27 +398,37 @@ def create_new_project(request, project_name):
     return Response(data)
 
 
-@swagger_auto_schema(method=['GET', 'POST'])
-@api_view(['GET', 'POST'])
+@swagger_auto_schema(
+    methods=['POST'],
+    request_body=IngestedSerializer,
+)
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def copy_ingested(request):
-    payload = json.loads(request.body.decode('utf-8'))
-    project_name = payload['project_name']
-    project_dir = f'media/users/{request.user}/{project_name}'
-    mypath = os.path.join(BASE_DIR, project_dir)
-    subprocess.call([f'{BASE_DIR}/preprocess.sh', "-i", mypath])
-    for file_id in payload['ingested']:
-        files_upload = Files_upload.objects.get(pk=int(file_id))
-        print("==================")
-        print(files_upload.up_file)
-        content = default_storage.open(files_upload.up_file)
-        default_storage.save(
-            f'users/{request.user}/{project_name}/{files_upload.name}', content)
-        print(files_upload)
-    data = {
-        'message': 'success'
-    }
-    return Response(data)
+    request_data = IngestedSerializer(data=request.data)
+    if request_data.is_valid():
+        # payload = json.loads(request.body.decode('utf-8'))
+        project_name = request_data['project_name']
+        project_dir = f'media/users/{request.user}/{project_name}'
+        mypath = os.path.join(BASE_DIR, project_dir)
+        subprocess.call([f'{BASE_DIR}/preprocess.sh', "-i", mypath])
+        for file_id in request_data['ingested']:
+            files_upload = Files_upload.objects.get(pk=int(file_id))
+            print("==================")
+            print(files_upload.up_file)
+            content = default_storage.open(files_upload.up_file)
+            default_storage.save(
+                f'users/{request.user}/{project_name}/{files_upload.name}', content)
+            print(files_upload)
+        data = {
+            'message': 'success'
+        }
+        return Response(data)
+    else:
+        return Response(data.errors,status=400)
+
+
+   
 
 
 @swagger_auto_schema(
